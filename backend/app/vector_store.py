@@ -14,27 +14,28 @@ from qdrant_client.models import (
 
 from app.config import settings
 
-_client = QdrantClient(
+_client = None
 
-    host=settings.qdrant_host,
-
-    port=settings.qdrant_port
-
-)
+def _get_client() -> QdrantClient:
+    global _client
+    if _client is None:
+        _client = QdrantClient(
+            host=settings.qdrant_host,
+            port=settings.qdrant_port,
+        )
+    return _client
 
 def ensure_collection(vector_size: int):
 
+    client = _get_client()
     collections = [
-
         c.name
-
-        for c in _client.get_collections().collections
-
+        for c in client.get_collections().collections
     ]
 
     if settings.qdrant_collection not in collections:
 
-        _client.create_collection(
+        client.create_collection(
 
             collection_name=settings.qdrant_collection,
 
@@ -84,7 +85,7 @@ def upsert_chunks(
 
     ]
 
-    _client.upsert(
+    _get_client().upsert(
 
         collection_name=settings.qdrant_collection,
 
@@ -136,7 +137,7 @@ def search(
 
         )
 
-    return _client.search(
+    return _get_client().search(
 
         collection_name=settings.qdrant_collection,
 

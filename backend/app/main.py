@@ -1,7 +1,9 @@
 import uuid
+import logging
 
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 
 from app.config import settings
 from app.extraction import extract_text
@@ -10,6 +12,8 @@ from app.embeddings import embed_text, embed_batch
 from app.vector_store import ensure_collection, upsert_chunks, search
 from app.llm import generate_answer
 from app.schemas import UploadResponse, AskRequest, AskResponse
+
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="RAG Backend")
 
@@ -28,6 +32,12 @@ async def health():
 
 @app.post("/upload", response_model=UploadResponse)
 async def upload_document(file: UploadFile = File(...)):
+    if file.filename is None or file.filename == "":
+        raise HTTPException(
+            400,
+            "No file selected. Please upload a PDF, DOCX, PPTX, or TXT file."
+        )
+
     content = await file.read()
 
     if len(content) > settings.max_upload_mb * 1024 * 1024:
@@ -55,20 +65,40 @@ async def upload_document(file: UploadFile = File(...)):
             "No extractable text found in document"
         )
 
-    vectors = await embed_batch(chunks)
+    try:
+        vectors = await embed_batch(chunks)
+    except httpx.ConnectError:
+        logger.exception("Cannot connect to Ollama at %s", settings.ollama_host)
+        raise HTTPException(
+            503,
+            f"Embedding service (Ollama) is unreachable at {settings.ollama_host}"
+        )
+    except httpx.HTTPStatusError as e:
+        logger.exception("Ollama returned an error")
+        raise HTTPException(
+            502,
+            f"Embedding service error: {e.response.status_code} - {e.response.text}"
+        )
 
-    ensure_collection(
-        vector_size=len(vectors[0])
-    )
+    try:
+        ensure_collection(
+            vector_size=len(vectors[0])
+        )
 
-    document_id = str(uuid.uuid4())
+        document_id = str(uuid.uuid4())
 
-    upsert_chunks(
-        document_id,
-        file.filename,
-        chunks,
-        vectors
-    )
+        upsert_chunks(
+            document_id,
+            file.filename,
+            chunks,
+            vectors
+        )
+    except Exception as e:
+        logger.exception("Qdrant vector store error")
+        raise HTTPException(
+            503,
+            f"Vector store (Qdrant) error: {e}"
+        )
 
     return UploadResponse(
         document_id=document_id,
