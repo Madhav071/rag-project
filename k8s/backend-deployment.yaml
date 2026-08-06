@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: rag-backend
+  namespace: rag-app
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: rag-backend
+
+  template:
+    metadata:
+      labels:
+        app: rag-backend
+
+    spec:
+
+      nodeSelector:
+        role: app
+
+      containers:
+
+      - name: rag-backend
+
+        image: maddy30/rag-backend:v1
+
+        imagePullPolicy: Always
+
+        ports:
+        - containerPort: 8000
+
+        resources:
+          requests:
+            cpu: "250m"
+            memory: "512Mi"
+
+          limits:
+            cpu: "1"
+            memory: "1Gi"
+
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+
+          initialDelaySeconds: 15
+          periodSeconds: 20
+
+---
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: backend-service
+  namespace: rag-app
+
+spec:
+
+  selector:
+    app: rag-backend
+
+  ports:
+
+  - port: 8000
+    targetPort: 8000
+
+  type: ClusterIP
