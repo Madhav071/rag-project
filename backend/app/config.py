@@ -3,14 +3,14 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
 
-    qdrant_host: str = "localhost"
+    qdrant_host: str = "qdrant-service.rag-app.svc.cluster.local"
 
     qdrant_port: int = 6333
 
     qdrant_collection: str = "documents"
 
 
-    ollama_host: str = "http://localhost:11434"
+    ollama_host: str = "http://ollama-service.rag-app.svc.cluster.local:11434"
 
     llm_model: str = "gemma2:2b"
 
