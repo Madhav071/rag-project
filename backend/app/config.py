@@ -12,7 +12,7 @@ class Settings(BaseSettings):
 
     ollama_host: str = "http://ollama-service.rag-app.svc.cluster.local:11434"
 
-    llm_model: str = "gemma2:2b"
+    llm_model: str = "llama3.2:3b"
 
     embedding_model: str = "nomic-embed-text"
 
