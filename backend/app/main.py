@@ -32,55 +32,30 @@ async def health():
 
 @app.post("/upload", response_model=UploadResponse)
 async def upload_document(file: UploadFile = File(...)):
-    if file.filename is None or file.filename == "":
-        raise HTTPException(
-            400,
-            "No file selected. Please upload a PDF, DOCX, PPTX, or TXT file."
-        )
-
-    content = await file.read()
-
-    if len(content) > settings.max_upload_mb * 1024 * 1024:
-        raise HTTPException(
-            413,
-            f"File exceeds {settings.max_upload_mb}MB limit"
-        )
-
     try:
+        content = await file.read()
+
+        if len(content) > settings.max_upload_mb * 1024 * 1024:
+            raise HTTPException(
+                413,
+                f"File exceeds {settings.max_upload_mb}MB limit"
+            )
+
         text = extract_text(
             file.filename,
             content
         )
-    except ValueError as e:
-        raise HTTPException(
-            400,
-            str(e)
-        )
 
-    chunks = chunk_text(text)
+        chunks = chunk_text(text)
 
-    if not chunks:
-        raise HTTPException(
-            400,
-            "No extractable text found in document"
-        )
+        if not chunks:
+            raise HTTPException(
+                400,
+                "No extractable text found in document"
+            )
 
-    try:
         vectors = await embed_batch(chunks)
-    except httpx.ConnectError:
-        logger.exception("Cannot connect to Ollama at %s", settings.ollama_host)
-        raise HTTPException(
-            503,
-            f"Embedding service (Ollama) is unreachable at {settings.ollama_host}"
-        )
-    except httpx.HTTPStatusError as e:
-        logger.exception("Ollama returned an error")
-        raise HTTPException(
-            502,
-            f"Embedding service error: {e.response.status_code} - {e.response.text}"
-        )
 
-    try:
         ensure_collection(
             vector_size=len(vectors[0])
         )
@@ -93,18 +68,23 @@ async def upload_document(file: UploadFile = File(...)):
             chunks,
             vectors
         )
-    except Exception as e:
-        logger.exception("Qdrant vector store error")
-        raise HTTPException(
-            503,
-            f"Vector store (Qdrant) error: {e}"
+
+        return UploadResponse(
+            document_id=document_id,
+            filename=file.filename,
+            chunks_indexed=len(chunks)
         )
 
-    return UploadResponse(
-        document_id=document_id,
-        filename=file.filename,
-        chunks_indexed=len(chunks)
-    )
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )
 
 
 @app.post("/ask", response_model=AskResponse)
