@@ -6,7 +6,7 @@
   'use strict';
 
   // ---- Configuration ----
-  const API_BASE = window.PAPERSTACK_API || 'http://localhost:8000';
+  const API_BASE = window.PAPERSTACK_API || '/api';
 
   // ---- State ----
   let currentDocumentId = null;
