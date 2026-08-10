@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paperstack — Ask your documents anything</title>
+  <meta name="description" content="Upload a document and ask questions about it. Paperstack reads your PDF, DOCX, PPTX, or text files and answers in plain language.">
+  <link rel="stylesheet" href="style.css">
+  <!-- Favicon: a simple emoji-based one (no external assets needed) -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📄</text></svg>">
+</head>
+<body>
+
+  <!-- ===== Header ===== -->
+  <header class="app-header">
+    <h1>
+      <!-- Inline SVG: small stack-of-pages icon -->
+      <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="4" y="2" width="16" height="20" rx="2"/>
+        <path d="M8 6h8M8 10h8M8 14h5"/>
+      </svg>
+      Paperstack
+    </h1>
+    <p class="tagline">Drop a document, ask anything.</p>
+  </header>
+
+  <!-- ===== Main ===== -->
+  <main class="app-main">
+
+    <!-- Upload Section -->
+    <section class="section" id="upload-section" aria-label="Upload a document">
+      <div class="upload-zone" id="upload-zone" role="button" tabindex="0" aria-label="Drop a file here or click to browse">
+        <span class="upload-zone-icon" aria-hidden="true">📄</span>
+        <p class="upload-zone-text">
+          Drop your document here, or <strong>click to browse</strong>
+        </p>
+        <p class="upload-zone-hint">Up to 25 MB</p>
+        <div class="file-types">
+          <span class="file-badge">PDF</span>
+          <span class="file-badge">DOCX</span>
+          <span class="file-badge">PPTX</span>
+          <span class="file-badge">TXT</span>
+        </div>
+        <input type="file" id="file-input" accept=".pdf,.docx,.pptx,.txt" aria-label="Choose a file to upload">
+      </div>
+
+      <!-- Upload status (hidden by default) -->
+      <div class="upload-status" id="upload-status" role="status" aria-live="polite">
+        <span class="status-icon" id="status-icon"></span>
+        <span id="status-text"></span>
+      </div>
+    </section>
+
+    <!-- Document banner (shown after successful upload) -->
+    <div class="doc-banner" id="doc-banner" aria-label="Current document">
+      <span class="doc-banner-icon" aria-hidden="true">📎</span>
+      <div class="doc-banner-info">
+        <div class="doc-banner-name" id="doc-name"></div>
+        <div class="doc-banner-meta" id="doc-meta"></div>
+      </div>
+      <button class="doc-banner-change" id="change-doc-btn" type="button">Change file</button>
+    </div>
+
+    <!-- Ask Section (hidden until a document is uploaded) -->
+    <section class="ask-section" id="ask-section" aria-label="Ask a question">
+      <form class="ask-form" id="ask-form" autocomplete="off">
+        <input
+          type="text"
+          class="ask-input"
+          id="ask-input"
+          placeholder="What would you like to know?"
+          aria-label="Type your question"
+          required
+        >
+        <button type="submit" class="btn btn-primary" id="ask-btn">Ask</button>
+      </form>
+
+      <!-- Q&A thread -->
+      <div class="qa-thread" id="qa-thread" aria-label="Questions and answers">
+        <div class="empty-state" id="empty-state">
+          <span class="empty-state-icon" aria-hidden="true">☕</span>
+          <p>Ask your first question — I'll find the answer in your document.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ===== Footer ===== -->
+  <footer class="app-footer">
+    Paperstack <span class="coffee-bean" aria-hidden="true">☕</span> reads documents so you don't have to.
+  </footer>
+
+  <!-- Toast (for transient notifications) -->
+  <div class="toast" id="toast" role="alert" aria-live="assertive"></div>
+
+  <!-- App logic -->
+  <script src="app.js"></script>
+</body>
+</html>
