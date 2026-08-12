@@ -46,7 +46,7 @@
     if (!file) return 'No file selected.';
     const ext = getExtension(file.name);
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
-      return `Can't read .${ext} files — try a PDF, DOCX, PPTX, or plain text file.`;
+      return `Cannot read .${ext} files — try a PDF, DOCX, PPTX, or plain text file.`;
     }
     if (file.size > MAX_SIZE_BYTES) {
       return `That file is too large (limit is ${MAX_SIZE_MB} MB).`;
@@ -119,7 +119,7 @@
 
     } catch (err) {
       const message = err.message.includes('Failed to fetch')
-        ? 'Couldn't reach the server — is the backend running?'
+        ? 'Couldnt reach the server — is the backend running?'
         : err.message;
       setUploadStatus('error', message);
     } finally {
@@ -214,7 +214,7 @@
     } catch (err) {
       thinkingEl.remove();
       const message = err.message.includes('Failed to fetch')
-        ? 'Couldn't reach the server — is the backend running?'
+        ? 'Couldnt reach the server — is the backend running?'
         : err.message;
       const errorEl = document.createElement('div');
       errorEl.className = 'answer-card';
