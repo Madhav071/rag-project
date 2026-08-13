@@ -26,7 +26,7 @@ spec:
 
       - name: rag-backend
 
-        image: maddy30/rag-backend:v3
+        image: maddy30/rag-backend:v2
 
         imagePullPolicy: Always
 
